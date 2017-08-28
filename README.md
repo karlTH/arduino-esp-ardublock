@@ -23,8 +23,10 @@ SCREENSHOT of ardublock ESP
 ESP
 ![esp1][esp1]
 ![esp2][esp2]
+
 WEATHER
-![WEATHER][weather]
+![weather][weather]
+
 Display
 ![display][display]
 
