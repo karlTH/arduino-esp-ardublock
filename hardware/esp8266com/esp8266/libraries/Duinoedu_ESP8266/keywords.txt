@@ -1,0 +1,38 @@
+#######################################
+# Syntax Coloring Map For Mouse
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+MonEsp					LITERAL1
+Duinoedu_Esp8266		LITERAL1
+server					LITERAL1
+Adafruit_MQTT_Subscribe	LITERAL1
+
+#######################################
+# Objets
+#######################################
+connect_AP				LITERAL10
+connect_STA				LITERAL10
+updateStringint			LITERAL10
+updateStringbool		LITERAL10
+sendHttpRequest			LITERAL10
+mqqtconnect_Adafruit	LITERAL10
+mqttpublish				LITERAL10
+Received				LITERAL10
+
+#######################################
+# Langage EDU
+#######################################
+
+
+
+
+
+
