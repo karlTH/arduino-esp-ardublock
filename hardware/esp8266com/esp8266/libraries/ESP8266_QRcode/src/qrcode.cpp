@@ -3,10 +3,10 @@
 #include "qrencode.h"
 
 int offsetsX = 42;
-int offsetsY = 10;
+int offsetsY = 17;
 int screenwidth = 128;
 int screenheight = 64;
-bool QRDEBUG = false;
+bool QRDEBUG = true;
 
 QRcode::QRcode(OLEDDisplay *display){
 	this->display = display;
@@ -41,7 +41,8 @@ void QRcode::render(int x, int y, int color){
 void QRcode::screenwhite(){
 	display->clear();
 	display->setColor(WHITE);
-	display->fillRect(0, 0, screenwidth, screenheight);
+	display->fillRect(offsetsX-2, offsetsY-1, WD+4, WD+3);
+	
 	display->display();
 }
 
