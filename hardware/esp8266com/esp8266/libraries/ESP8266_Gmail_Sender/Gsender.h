@@ -37,7 +37,6 @@ class Gsender
 		void SMTP_SERVER2(char* Server);
 		void EMAILBASE64_LOGIN2(char* LOGIN);
 		void EMAILBASE64_PASSWORD2(char* PASSWORD);
-		void FROM2(char* From);
-		void Send2(String Subject,String Message);
+		void Send2(String Subject,String Message,String To);
 };
 #endif // G_SENDER

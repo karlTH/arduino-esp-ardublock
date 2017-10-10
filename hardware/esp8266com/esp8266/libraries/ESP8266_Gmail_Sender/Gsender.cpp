@@ -64,13 +64,10 @@ void Gsender::EMAILBASE64_PASSWORD2(char* PASSWORD)
 {
 	EMAILBASE64_PASSWORD=PASSWORD;
 }
-void Gsender::FROM2(char* From)
+
+void Gsender::Send2(String Subject2,String Message,String To)
 {
-	FROM=From;
-}
-void Gsender::Send2(String Subject2,String Message)
-{
-	if(Subject(Subject2)->Send(String(FROM), Message)) {
+	if(Subject(Subject2)->Send(To, Message)) {
         Serial.println("Message send.");
     } else {
         Serial.print("Error sending message: ");
