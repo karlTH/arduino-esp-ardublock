@@ -1,7 +1,8 @@
 /*
  
   Original Author: Karl THOMAS https://github.com/karlth
-  
+  Adds : David Souder
+  Version : 10/10/2017
 */
 
 #ifndef DUINOEDU_ESP8266_H
@@ -25,8 +26,7 @@ class Duinoedu_Esp8266
 	String DUINOEDU_PWD;
 
 
-int Received( Adafruit_MQTT_Subscribe &Feed , Adafruit_MQTT_Subscribe *subs)
-{
+int Received( Adafruit_MQTT_Subscribe &Feed , Adafruit_MQTT_Subscribe *subs){
 	 if (subs == &Feed) {
 		int Value = atoi((char *)&Feed.lastread);
 		 return Value;
@@ -46,7 +46,6 @@ void mqttpublish(Adafruit_MQTT_Publish Feed, String Flux ,int Value ) {
     Serial.println(F("OK!"));
   }
 }	
-	
 	
 void mqqtconnect_Adafruit(Adafruit_MQTT_Client *_mqtt  ){
   int8_t ret;
@@ -90,13 +89,13 @@ void connect_AP(const char *ssid,const char *password ){
 	Serial.println ( WiFi.softAPIP() );
 }
 
-
 void connect_AP_SetIP(const char *ssid,const char *password, IPAddress _local_ip, IPAddress _subnet, IPAddress  _gateway){
 	Serial.begin(9600);
 	delay(500);
-	WiFi.mode(WIFI_AP); //Our ESP8266-12E is an AccessPoint;
-	WiFi.softAP( ssid, password ); //The command will only work if the password length is 8 characters or more.
+	WiFi.mode(WIFI_AP); 									//Our ESP8266-12E is an AccessPoint;
+	WiFi.softAP( ssid, password ); 							//The command will only work if the password length is 8 characters or more.
 	WiFi.softAPConfig(_local_ip, _gateway, _subnet);
+	Serial.println("---");
 	Serial.print ( "Connected to access point : " ); 
 	Serial.println ( ssid );  
 	Serial.print ( "IP address: " ); 
@@ -124,9 +123,6 @@ void connect_STA(const char *ssid,const char *password ) {
 	Serial.println ( WiFi.localIP() );
 	delay ( 500 );
 }
-
-
-
 
 void connect_STA_SetIP(const char *ssid,const char *password, IPAddress _local_ip, IPAddress _subnet, IPAddress  _gateway) {
 	Serial.begin(9600);
@@ -160,7 +156,6 @@ void sendHttpRequest( String _serverHost,String _name, String _data ) {
   http.writeToStream(&Serial);
   http.end();
 }
-
 
 void updateStringint(ESP8266WebServer *_server, String _etiquette, int &_varDeStockage){
   if ( _server->hasArg(_etiquette )){
@@ -208,12 +203,230 @@ String gauge(int _Min, int _Max, String _Title){
 String iframe(String _Url, int _Width, int _Height){
 	return "<p><iframe style='border: 1px #FFFFFF none;' src='+_Url+' width='"+String(_Width)+"px' height='"+String(_Height)+"px' frameborder='1' marginwidth='0px' marginheight='0px' scrolling='yes'></iframe></p>";
 }
-String javaslider() {
+
+String javaslider(int _Max=255) {
 	return "<script type=\"text/javascript\">\r\nfunction sendDac(pin,value){\r\nserver =  \"http://"+DUINOEDU_IP+"/?\"+pin+\"=\"+value;\r\nrequest = new XMLHttpRequest();\r\nrequest.open(\"GET\", server, true);\r\nrequest.send();\r\nValNum = \"value\" + pin;\r\ndocument.getElementById(ValNum).innerHTML=value;\r\n}\r\n</script>\r\n";
+
 }
+
+String addPhoneStyle(){
+	
+String cssStyle;
+cssStyle = "";
+cssStyle += "\r\n<style> \r\n";
+
+// Style général	
+cssStyle += "\
+*{\r\n\
+	font-size:28px; \r\n\
+	font-family:Arial; \r\n\
+}\r\n";
+	
+cssStyle += "\
+body{\r\n\
+	padding-left:5%; \r\n\
+	padding-right:5%; \r\n\
+}\r\n";
+			
+cssStyle += "\
+h2{\r\n\
+		font-size:32px; \r\n\
+}\r\n";
+
+// Style slider	
+cssStyle += "\
+input[type=range] {\r\n\
+	-webkit-appearance: none;\r\n\
+	width: 100%;\
+}\r\n";
+			
+cssStyle += "\
+.slider::-webkit-slider-runnable-track {\r\n\
+	width: 100%;\r\n\
+	height: 50px;\r\n\
+	cursor: pointer;\r\n\
+	background-image:linear-gradient(#eeeeee, #eeeeee);\r\n\
+	border-radius: 50px;\r\n\
+}\r\n";
+	
+cssStyle += "\
+.slider::-webkit-slider-thumb {\r\n\
+	height: 50px; \r\n\
+	width: 75px; \r\n\
+	border-radius: 50px; \r\n\
+	background-image:linear-gradient(#5588ee, #3355bb); \r\n\
+	cursor: pointer; \r\n\
+	-webkit-appearance: none; \r\n\
+	margin-bottom: 0px; \r\n\
+}\r\n";
+
+// Style interrupteur	
+cssStyle += "\
+.inter::-webkit-slider-runnable-track {\r\n\
+	width: 100%;\r\n\
+	height: 50px;\r\n\
+	cursor: pointer;\r\n\
+	background-image:linear-gradient(#aaaaaa, #aaaaaa);\r\n\
+	border-radius: 5px;\r\n\
+}\r\n";
+	
+cssStyle += "\
+.inter::-webkit-slider-thumb {\r\n\
+	height: 50px;\r\n\
+	width: 50%;\r\n\
+	background-image:linear-gradient(#5588ee, #3355bb);\r\n\
+	cursor: pointer;\r\n\
+	-webkit-appearance: none;\r\n\
+	margin-bottom: 0px;\r\n\
+	border-radius: 5px;\r\n\
+}\r\n";
+
+// Style push
+cssStyle += "\
+.push{\
+	height: 50px;\r\n\
+	width: 100%;\r\n\
+	background-image:linear-gradient(#5588ee, #3355bb);\r\n\
+	-webkit-appearance: none;\r\n\
+	margin-bottom: 0px;\r\n\
+	border-radius: 5px;\r\n\
+}\r\n";
+	
+
+// Style valeur dynamique			
+cssStyle += "\
+.value{\r\n\
+	font-size:28px;\r\n\
+	color:#3388ff;\r\n\
+	Font-Weight:bold;\r\n\
+}\r\n";
+
+// Style nom de l'élément		
+cssStyle += "\
+.labelTab{\r\n\
+	min-width:80px;\r\n\
+	width:40%;\r\n\
+}\r\n";
+
+cssStyle += "\
+.valueTab{\r\n\
+	min-width:80px;\r\n\
+	width:10%;\r\n\
+	text-align:right;\r\n\
+}\r\n";
+	
+cssStyle += "</style>\r\n";
+	
+return cssStyle; 
+
+}
+
 String slider(int _Min, int _Max, String _Title){
-	return "<tr>\r\n<td align=\'center\'>\r\n"+_Title+"\r\n <br>\r\n<input type=\'range\' style=\'width: 90px; height: 30px;\' id=\'"+_Title+"\' min=\'"+String(_Min)+"\' max=\'"+String(_Max)+"\' value=\'0\'step=\'1\' onchange=\'sendDac(\""+_Title+"\",this.value);\'/>\r\n<br>\r\n<span id=\'value"+_Title+"\'>0</span>\r\n</td>\r\n</tr>\r\n<hr>\r\n";
+// return "<tr>\r\n<td align=\'center\'>\r\n"+_Title+"\r\n <br>\r\n<input type=\'range\' style=\'width: 90px; height: 30px;\' id=\'"+_Title+"\' min=\'"+String(_Min)+"\' max=\'"+String(_Max)+"\' value=\'0\'step=\'1\' onchange=\'sendDac(\""+_Title+"\",this.value);\'/>\r\n<br>\r\n<span id=\'value"+_Title+"\'>0</span>\r\n</td>\r\n</tr>\r\n<hr>\r\n";
+	String classCss,id,type,min,max,value,step,onChange,onmousedown,onmouseup;   
+
+
+
+// INPUT 
+    // SLIDER/INTER/PUSH : classe
+		if(_Max==0) classCss=	" class=push";
+		if(_Max==1)	classCss=	" class=inter";
+		if(_Max> 1) classCss=	" class=slider";
+
+	// SLIDER/INTER/PUSH
+		id=			" id="+_Title;
+		
+			
+	// SLIDER/INTER
+		if(_Max>0) {
+		value=		" value=0";
+		type=		" type=range"; 
+		min=		" min="+String(_Min);
+		max=		" max="+String(_Max);
+		step=		" step=1";
+		onChange=		" onchange='sendDac(\""+_Title+"\",this.value);'";
+		onmousedown=	"";
+		onmouseup=		"";
+		}
+	// PUSH
+		if(_Max==0) {
+		value=		"";
+		type=		" type=button"; 
+		min=		"";
+		max=		"";
+		step=		"";
+		onChange=		"";
+		onmousedown=	" onmousedown='sendDac(\""+_Title+"\",1);'";
+		onmouseup=		" onmouseup='sendDac(\""+_Title+"\",0);'";
+		}
+
+
+// Chaîne liée au slider
+String s="" ;
+#define JUMP	s+=
+#define TAB0 s+="\r\n";s+=
+#define TAB1 s+="\r\n\t";s+=
+#define TAB2 s+="\r\n\t\t";s+=
+#define TAB3 s+="\r\n\t\t\t";s+=
+#define COTE "'"
+
+// TABLE : DEBUT
+TAB0"<table width=100%>";
+TAB1	"<tr>";
+// Affichage : NOM ELEMENT
+TAB2		"<td class=labelTab>"; 
+TAB3			_Title;
+TAB2		"</td>";
+
+//  Affichage : OBJET:SLIDER/INTER/PUSH
+TAB2		"<td>";
+TAB3			"<input";
+JUMP				classCss;
+JUMP				type;
+JUMP				id; 
+JUMP				min;
+JUMP				max; 
+JUMP				value;
+JUMP				step;											
+JUMP				onChange; 
+JUMP				onmousedown;
+JUMP				onmouseup;			
+JUMP   			" />";
+TAB2		"</td>";
+
+//  Affichage : VALEUR
+TAB2 		"<td class=valueTab>";
+TAB3 			"<span class=value id=\'value"+_Title+"\'>0</span>";
+TAB2 		"</td>";
+
+// TABLE : FIN
+TAB1 	"</tr>";
+TAB0"</table>";
+JUMP"\r\n";
+
+/* CODE GENERE
+<table width=100%>
+	<tr>
+		<td class=labelTab>
+			LED_D3
+		</td>
+		<td>
+			<input class=inter type=range id=LED_D3 min=0 max=1 value=0 step=1 onchange='sendDac("LED_D3",this.value);' />
+		</td>
+		<td class=valueTab>
+			<span class=value id='valueLED_D3'>0</span>
+		</td>
+	</tr>
+</table>
+*/
+
+return s;	
+
 }
+
+
+
+
 	
 String javaScript_start(){
 	String javaScript="<SCRIPT>\n";
@@ -246,7 +459,23 @@ String javaScript_end(){
 	javaScript+="</SCRIPT>\n";
 	return javaScript;
 }
+
+void initExperimentShield(){
+	// D4,D6,D8,D9,D12,D13
+	uint8_t pins[] ={4,6,8,9,12,13};
+	pinMode(12, OUTPUT);
+	digitalWrite(12, LOW);
+	pinMode(6, OUTPUT);
+	digitalWrite(6, LOW);
 	
- };
+	/*for(uint8_t i=0;i<6;i++){
+		uint8_t j=pins[i];
+		pinMode(j, OUTPUT);
+		digitalWrite(j, LOW);
+	}*/
+}
+
+
+};
 
 #endif
