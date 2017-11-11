@@ -2,7 +2,7 @@
  
   Original Author: Karl THOMAS https://github.com/karlth
   Adds : David Souder
-  Version : 10/10/2017
+  Version : 10/10/2017 - V4
 */
 
 #ifndef DUINOEDU_ESP8266_H
@@ -15,6 +15,20 @@
 #include <Adafruit_MQTT.h>
 #include <Adafruit_MQTT_Client.h>
 
+#define JUMP s+=
+#define TAB0 s+="\r\n";s+=
+#define TAB1 s+="\r\n\t";s+=
+#define TAB2 s+="\r\n\t\t";s+=
+#define TAB3 s+="\r\n\t\t\t";s+=
+#define COTE "'"
+
+#ifndef OUI
+#define OUI true
+#endif
+
+#ifndef NON
+#define NON false
+#endif
 
 
 class Duinoedu_Esp8266	
@@ -33,9 +47,19 @@ int Received( Adafruit_MQTT_Subscribe &Feed , Adafruit_MQTT_Subscribe *subs){
     }
 }
 	
-void mqttpublish(Adafruit_MQTT_Publish Feed, String Flux ,int Value ) {
-  Serial.print("Sending Feed :");
-  Serial.print(Flux);
+void mqttpublish(Adafruit_MQTT_Publish Feed, String Flux ,int Value, uint32_t interval=2000 ) {
+  
+  String FluxSecure = Flux;
+  //FluxSecure.toLowerCase();
+    
+  static uint32_t lastTime = 0;
+  uint32_t thisTime = millis();
+  if( thisTime < (lastTime+interval) ) return;
+  lastTime=thisTime;
+  
+  
+  Serial.print("Sending Feed__ :");
+  Serial.print(FluxSecure);
   Serial.print(" val :");
   Serial.print(Value);
   Serial.print("...");
@@ -160,9 +184,9 @@ void sendHttpRequest( String _serverHost,String _name, String _data ) {
 void updateStringint(ESP8266WebServer *_server, String _etiquette, int &_varDeStockage){
   if ( _server->hasArg(_etiquette )){
     _varDeStockage= (_server->arg(_etiquette).toInt());
-    Serial.print(_etiquette);
-    Serial.print(":");
-    Serial.println(_varDeStockage);
+    //Serial.print(_etiquette);
+    //Serial.print(":");
+    //Serial.println(_varDeStockage);
   }
 }
 
@@ -170,9 +194,9 @@ void updateStringbool(ESP8266WebServer *_server, String _etiquette, boolean &_va
   if ( _server->hasArg(_etiquette) ){
     if ((_server->arg(_etiquette))==("0")) { _varDeStockage = 0;}
     else { _varDeStockage = 1;}
-    Serial.print(_etiquette);   
-    Serial.print(":");
-    Serial.println(_varDeStockage);
+    //Serial.print(_etiquette);   
+    //Serial.print(":");
+    //Serial.println(_varDeStockage);
   }
 }
 
@@ -180,9 +204,9 @@ void updateStringdouble (ESP8266WebServer *_server, String _etiquette, float _va
 	
 	if ( _server->hasArg(_etiquette )){
     _varDeStockage=((_server->arg(_etiquette))).toFloat() ;
-    Serial.print(_etiquette);
-    Serial.print(":");
-    Serial.println(_varDeStockage);
+    //Serial.print(_etiquette);
+    //Serial.print(":");
+    //Serial.println(_varDeStockage);
 	
 	}
 }
@@ -205,8 +229,33 @@ String iframe(String _Url, int _Width, int _Height){
 }
 
 String javaslider(int _Max=255) {
-	return "<script type=\"text/javascript\">\r\nfunction sendDac(pin,value){\r\nserver =  \"http://"+DUINOEDU_IP+"/?\"+pin+\"=\"+value;\r\nrequest = new XMLHttpRequest();\r\nrequest.open(\"GET\", server, true);\r\nrequest.send();\r\nValNum = \"value\" + pin;\r\ndocument.getElementById(ValNum).innerHTML=value;\r\n}\r\n</script>\r\n";
 
+//==== SCRIPT 01 : script initial Karl
+//return "<script type=\"text/javascript\">\r\nfunction sendDac(pin,value){\r\nserver = \"http://"+DUINOEDU_IP+"/?\"+pin+\"=\"+value;\r\nrequest=new XMLHttpRequest();\r\nrequest.open(\"GET\", server, true);\r\nrequest.send();\r\nValNum = \"value\"+pin;\r\ndocument.getElementById(ValNum).innerHTML=value;\r\n}\r\n</script> \r\n";
+
+//==== SCRIPT 02 : script initial Karl
+return "<script type=\"text/javascript\">\r\nfunction sendDac(pin,value){\r\nserver = \"http://"+DUINOEDU_IP+"/?\"+pin+\"=\"+value;\r\nrequest=new XMLHttpRequest();\r\nrequest.open(\"GET\", server, true);\r\nrequest.send(null);\r\nValNum = \"value\"+pin;\r\ndocument.getElementById(ValNum).innerHTML=value;\r\n}\r\n</script> \r\n";
+
+//==== SCRIPT 03 : script David - en test 
+/*
+String s="";
+TAB0"<script type=\"text/javascript\">";
+TAB1	"var lastTime=0;";	
+TAB1	"function sendDac(pin,value, interval){";
+TAB2		"ValNum = \"value\" + pin;";
+TAB2		"thisTime = Date.now();";
+TAB2		"document.getElementById(ValNum).innerHTML=value;";					// Temps réel
+TAB2		"if( thisTime > (lastTime+interval) ){";							// Modéré
+TAB3			"server = \"http://"+DUINOEDU_IP+"/?\"+pin+\"=\"+value;";		
+TAB3			"request = new XMLHttpRequest();";
+TAB3			"request.open(\"GET\", server, true);";
+TAB3			"request.send();";
+TAB3			"lastTime = Date.now();";	
+TAB2		"}";				
+TAB1	"}";
+TAB0"</script>";			
+return s;
+*/
 }
 
 String addPhoneStyle(){
@@ -233,7 +282,7 @@ h2{\r\n\
 		font-size:32px; \r\n\
 }\r\n";
 
-// Style slider	
+//==== SLIDER
 cssStyle += "\
 input[type=range] {\r\n\
 	-webkit-appearance: none;\r\n\
@@ -260,7 +309,7 @@ cssStyle += "\
 	margin-bottom: 0px; \r\n\
 }\r\n";
 
-// Style interrupteur	
+//==== INTERRUPTEUR
 cssStyle += "\
 .inter::-webkit-slider-runnable-track {\r\n\
 	width: 100%;\r\n\
@@ -271,7 +320,8 @@ cssStyle += "\
 }\r\n";
 	
 cssStyle += "\
-.inter::-webkit-slider-thumb {\r\n\
+.inter::-webkit-slider-thumb,.interGreen::-webkit-slider-thumb\r\n\
+{\r\n\
 	height: 50px;\r\n\
 	width: 50%;\r\n\
 	background-image:linear-gradient(#5588ee, #3355bb);\r\n\
@@ -281,10 +331,12 @@ cssStyle += "\
 	border-radius: 5px;\r\n\
 }\r\n";
 
-// Style push
+
+
+//==== POUSSOIR
 cssStyle += "\
 .push{\
-	height: 50px;\r\n\
+	height: 54px;\r\n\
 	width: 100%;\r\n\
 	background-image:linear-gradient(#5588ee, #3355bb);\r\n\
 	-webkit-appearance: none;\r\n\
@@ -293,7 +345,7 @@ cssStyle += "\
 }\r\n";
 	
 
-// Style valeur dynamique			
+// Style valeur dynamique (Ex:1023)			
 cssStyle += "\
 .value{\r\n\
 	font-size:28px;\r\n\
@@ -301,7 +353,7 @@ cssStyle += "\
 	Font-Weight:bold;\r\n\
 }\r\n";
 
-// Style nom de l'élément		
+// Style nom de l'élément (Ex:BOUTON1)		
 cssStyle += "\
 .labelTab{\r\n\
 	min-width:80px;\r\n\
@@ -321,88 +373,172 @@ return cssStyle;
 
 }
 
-String slider(int _Min, int _Max, String _Title){
+String addSpacer(uint8_t _Space){
+String s="" ;
+TAB0"<div"; 
+JUMP	" style='";
+JUMP		" float:left\;";
+JUMP		" width:"+String(_Space)+"%\;";
+JUMP	"'";
+JUMP">";
+TAB1	"&nbsp;";
+TAB0"</div>";	
+return s;
+}
+
+String startDiv(uint8_t _Width){
+String s="" ;
+	TAB0"<div"; 
+	JUMP	" style='";
+	JUMP		" float:left\;";
+	JUMP		" width:"+String(_Width)+"%\;";
+	JUMP	"'";
+	JUMP">";
+return s;	
+}
+
+String endDiv(){
+return "</div>";	
+}
+
+String slider(int _Min, int _Max, String _Title, bool _DisplayNam=true, bool _DisplayValue=true, bool _DisplaySeparator=true,uint8_t _Width=100){
+
+//==== Script initial Karl
 // return "<tr>\r\n<td align=\'center\'>\r\n"+_Title+"\r\n <br>\r\n<input type=\'range\' style=\'width: 90px; height: 30px;\' id=\'"+_Title+"\' min=\'"+String(_Min)+"\' max=\'"+String(_Max)+"\' value=\'0\'step=\'1\' onchange=\'sendDac(\""+_Title+"\",this.value);\'/>\r\n<br>\r\n<span id=\'value"+_Title+"\'>0</span>\r\n</td>\r\n</tr>\r\n<hr>\r\n";
-	String classCss,id,type,min,max,value,step,onChange,onmousedown,onmouseup;   
 
-
+//==== Nouveau script
+// CONFIG PAR DEFAUT
+		int interval = 1000;	
+	// Config attributs html par défaut
+		String classCss 		=	"";
+		String id				=	" id="+_Title;			
+		String type				=	"";		
+		String min				=	"";
+		String max				=	"";
+		String value			=	" value=0";
+		String step				=	"";
+	// Config gestionnaires événements par défaut
+		// String sendDac = "'sendDac(\""+_Title+"\",this.value," +interval+");'"; 
+		String sendDac 			= 	"'sendDac(\""+_Title+"\",this.value);'";
+		String onChange 		=	" onchange="+sendDac;
+		String onmousedown		=	"";
+		String onmouseup		=	"";
+		String ontouchstart		=	"";
+		String ontouchend		=	"";
+		String onmousemove  	=	"";
+		String oninput			=	"";
 
 // INPUT 
     // SLIDER/INTER/PUSH : classe
-		if(_Max==0) classCss=	" class=push";
-		if(_Max==1)	classCss=	" class=inter";
-		if(_Max> 1) classCss=	" class=slider";
-
-	// SLIDER/INTER/PUSH
-		id=			" id="+_Title;
-		
+		if(_Max==0) classCss	=	" class=push";
+		if(_Max==1)	classCss	=	" class=inter";
+		if(_Max> 1) classCss	=	" class=slider";
 			
 	// SLIDER/INTER
 		if(_Max>0) {
-		value=		" value=0";
-		type=		" type=range"; 
-		min=		" min="+String(_Min);
-		max=		" max="+String(_Max);
-		step=		" step=1";
-		onChange=		" onchange='sendDac(\""+_Title+"\",this.value);'";
-		onmousedown=	"";
-		onmouseup=		"";
+			type				=	" type=range"; 
+			min					=	" min="+String(_Min);
+			max					=	" max="+String(_Max);
+			step				=	" step=1";
 		}
-	// PUSH
+	
+	// SLIDER ONLY 
+		if(_Max>1){
+			//onmousemove=	" onmousemove="+sendDac;
+			//oninput=		" oninput="+sendDac;
+		}
+	
+	// PUSH ONLY
 		if(_Max==0) {
-		value=		"";
-		type=		" type=button"; 
-		min=		"";
-		max=		"";
-		step=		"";
-		onChange=		"";
-		onmousedown=	" onmousedown='sendDac(\""+_Title+"\",1);'";
-		onmouseup=		" onmouseup='sendDac(\""+_Title+"\",0);'";
+			type				=	" type=button"; 
+			onmousedown			=	" onmousedown='sendDac(\""+_Title+"\",1,200);'";
+			ontouchstart		=   " ontouchstart='sendDac(\""+_Title+"\",1,200);'";
+			onmouseup			=	" onmouseup='sendDac(\""+_Title+"\",0,200);'";
+			ontouchend			=	" ontouchend='sendDac(\""+_Title+"\",0,200);'";		
 		}
 
 
 // Chaîne liée au slider
 String s="" ;
-#define JUMP	s+=
+/* Pour rappel
+#define JUMP s+=
 #define TAB0 s+="\r\n";s+=
 #define TAB1 s+="\r\n\t";s+=
 #define TAB2 s+="\r\n\t\t";s+=
 #define TAB3 s+="\r\n\t\t\t";s+=
 #define COTE "'"
+*/
+
+// DIV : GESTION DES COLONNES
+/*
+TAB0"<div"; 
+JUMP	" style='";
+JUMP		" float:left\;";
+JUMP		" width:"+String(_Width)+"%\;";
+JUMP	"'";
+JUMP">";
+*/
 
 // TABLE : DEBUT
-TAB0"<table width=100%>";
-TAB1	"<tr>";
+	TAB0"<table width=100%>";
+	TAB1	"<tr>";
 // Affichage : NOM ELEMENT
-TAB2		"<td class=labelTab>"; 
-TAB3			_Title;
-TAB2		"</td>";
-
+if(_DisplayNam){
+	TAB2		"<td class=labelTab>"; 
+	TAB3			_Title;
+	TAB2		"</td>";
+}
 //  Affichage : OBJET:SLIDER/INTER/PUSH
-TAB2		"<td>";
-TAB3			"<input";
-JUMP				classCss;
-JUMP				type;
-JUMP				id; 
-JUMP				min;
-JUMP				max; 
-JUMP				value;
-JUMP				step;											
-JUMP				onChange; 
-JUMP				onmousedown;
-JUMP				onmouseup;			
-JUMP   			" />";
-TAB2		"</td>";
+	TAB2		"<td>";
+	TAB3			"<input";
+	JUMP				classCss;
+	JUMP				type;
+	JUMP				id; 
+	JUMP				min;
+	JUMP				max; 
+	JUMP				value;
+	JUMP				step;											
+	JUMP				onChange; 
+	JUMP				onmousedown;
+	JUMP				ontouchstart;
+	JUMP				onmouseup;	
+	JUMP				ontouchend;	
+	JUMP 				onmousemove;
+	JUMP				oninput;	
+	JUMP   			" />";
+	TAB2		"</td>";
 
 //  Affichage : VALEUR
-TAB2 		"<td class=valueTab>";
-TAB3 			"<span class=value id=\'value"+_Title+"\'>0</span>";
-TAB2 		"</td>";
-
+if(_DisplayValue){
+	TAB2 		"<td class=valueTab>";
+	TAB3 			"<span class=value id=\'value"+_Title+"\'>0</span>";
+	TAB2 		"</td>";
+}
 // TABLE : FIN
-TAB1 	"</tr>";
-TAB0"</table>";
-JUMP"\r\n";
+	TAB1 	"</tr>";
+	TAB0"</table>";
+	
+// SEPARATEUR : HR
+if(_DisplaySeparator){
+	TAB0"<hr>";
+	JUMP"\r\n";
+}
+
+// DIV : FIN
+/*
+TAB0"</div>";
+*/
+
+// NOUVEAU CONTENEUR CONTROL
+
+/* Voir si c'est mieux avec du CSS
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 500px;
+}
+https://developer.mozilla.org/fr/docs/Web/CSS/grid-template 
+*/
 
 /* CODE GENERE
 <table width=100%>
@@ -423,10 +559,6 @@ JUMP"\r\n";
 return s;	
 
 }
-
-
-
-
 	
 String javaScript_start(){
 	String javaScript="<SCRIPT>\n";
@@ -461,18 +593,13 @@ String javaScript_end(){
 }
 
 void initExperimentShield(){
-	// D4,D6,D8,D9,D12,D13
-	uint8_t pins[] ={4,6,8,9,12,13};
-	pinMode(12, OUTPUT);
-	digitalWrite(12, LOW);
-	pinMode(6, OUTPUT);
-	digitalWrite(6, LOW);
-	
-	/*for(uint8_t i=0;i<6;i++){
+	// D4,D6,D8,D9,D12,D13 //D5=>LOW
+	uint8_t pins[] ={5,9,10,11,12,13};
+	for(uint8_t i=0;i<6;i++){
 		uint8_t j=pins[i];
 		pinMode(j, OUTPUT);
 		digitalWrite(j, LOW);
-	}*/
+	}
 }
 
 
